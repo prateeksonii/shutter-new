@@ -27,7 +27,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ setShowSignInForm }) => {
   });
 
   const { mutateAsync } = useMutation(async (data: SignUpFormValues) =>
-    publicApi.post("/api/v1/users", data)
+    publicApi.post("/api/v1/auth/signup", data)
   );
 
   const onSubmit: SubmitHandler<SignUpFormValues> = async (values) => {
