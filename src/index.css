@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  @apply bg-neutral;
+  @apply bg-neutral min-h-screen;
 }
 
 h1,
