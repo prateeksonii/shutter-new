@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { privateApi } from "./api";
 import userAtom from "./atoms/userAtom";
+import Right from "./components/Right";
 import Chat from "./routes/Chat";
 import Home from "./routes/Home";
 import { User } from "./types/models";
@@ -64,7 +65,9 @@ const App = () => {
           <Route path="" element={<Home />} />
         </Route>
         <Route path="/chat" element={<PrivateRoute />}>
-          <Route path="" element={<Chat />} />
+          <Route path="" element={<Chat />}>
+            <Route path=":username" element={<Right />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
