@@ -6,18 +6,18 @@ import {
   Outlet,
   Route,
   Routes,
-  useNavigate,
 } from "react-router-dom";
 import { privateApi } from "./api";
 import userAtom from "./atoms/userAtom";
-import Dashboard from "./routes/Dashboard";
+import Chat from "./routes/Chat";
 import Home from "./routes/Home";
+import { User } from "./types/models";
 
 const PublicRoute = () => {
   const [user] = useAtom(userAtom);
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/chat" replace />;
   }
 
   return <Outlet />;
@@ -42,7 +42,7 @@ const App = () => {
       try {
         const res = await privateApi.get("/api/v1/auth/me");
         if (res.data.error) return null;
-        setUser(res.data.user);
+        setUser(res.data.user as User);
         return {};
       } catch (err) {
         return null;
@@ -63,8 +63,8 @@ const App = () => {
         <Route path="/" element={<PublicRoute />}>
           <Route path="" element={<Home />} />
         </Route>
-        <Route path="/dashboard" element={<PrivateRoute />}>
-          <Route path="" element={<Dashboard />} />
+        <Route path="/chat" element={<PrivateRoute />}>
+          <Route path="" element={<Chat />} />
         </Route>
       </Routes>
     </BrowserRouter>
