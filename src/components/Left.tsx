@@ -1,15 +1,22 @@
 import { useAtom } from "jotai";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
+import invitesAtom from "../atoms/invitesAtom";
 import userAtom from "../atoms/userAtom";
 
 const Left = () => {
   const [user] = useAtom(userAtom);
   const location = useLocation();
 
-  if (!user) return <div>Loading...</div>;
+  const [invites] = useAtom(invitesAtom);
 
-  console.log(location.pathname);
+  const [activeTab, setActiveTab] = useState<"contacts" | "invites">(
+    "contacts"
+  );
+
+  if (!user) return <div>Loading...</div>;
 
   return (
     <div className="drawer bg-base-300">
@@ -35,6 +42,35 @@ const Left = () => {
               </button>
             </li>
           </Link>
+          <li>
+            <div className="tabs justify-center tabs-boxed">
+              <button
+                className={`tab flex-1 ${
+                  activeTab === "contacts" ? "tab-active" : ""
+                }`}
+                onClick={() => setActiveTab("contacts")}
+              >
+                Contacts
+              </button>
+              <button
+                className={`tab flex-1 ${
+                  activeTab === "invites" ? "tab-active" : ""
+                }`}
+                onClick={() => setActiveTab("invites")}
+              >
+                Invites
+              </button>
+            </div>
+          </li>
+          {activeTab === "contacts"
+            ? null
+            : invites.map((invite) => (
+                <li key={invite.ID}>
+                  <NavLink to={`/chat/${invite.Username}`}>
+                    {invite.Name}
+                  </NavLink>
+                </li>
+              ))}
         </ul>
       </div>
     </div>
