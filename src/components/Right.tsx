@@ -1,106 +1,77 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { BiSearch } from "react-icons/bi";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { privateApi } from "../api";
-import { User } from "../types/models";
-import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { BiSend } from "react-icons/bi";
+import { useNavigate, useParams } from "react-router-dom";
+import { z } from "zod";
+import { privateApi } from "../api";
+import contactsAtom from "../atoms/contactsAtom";
 import invitesAtom from "../atoms/invitesAtom";
-import { useLocation } from "react-router-dom";
+import { User } from "../types/models";
+import NewInviteForm from "./NewInviteForm";
+import TopBar from "./TopBar";
 
-const searchFormValidator = z.object({
-  username: z.string().min(1),
+const messageFormValidator = z.object({
+  message: z.string().min(1),
 });
 
-type SearchFormValues = z.infer<typeof searchFormValidator>;
+type MessageFormValues = z.infer<typeof messageFormValidator>;
 
 const Right = () => {
-  const navigate = useNavigate();
   const { username } = useParams();
 
-  const { handleSubmit, register } = useForm<SearchFormValues>({
-    resolver: zodResolver(searchFormValidator),
-  });
-
-  const [users, setUsers] = useState<User[]>([]);
-
+  const [contacts] = useAtom(contactsAtom);
   const [invites, setInvites] = useAtom(invitesAtom);
+  const [isInvite, setIsInvite] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User>();
 
-  const { mutateAsync } = useMutation(async (values: SearchFormValues) => {
-    try {
-      const res = await privateApi.get("/api/v1/users", {
-        params: {
-          username: values.username,
-        },
-      });
+  const { register, handleSubmit } = useForm<MessageFormValues>();
 
-      return res.data.users as User[];
-    } catch (err) {
-      return [];
+  useEffect(() => {
+    const contact = contacts.find((contact) => contact.Username === username);
+
+    if (contact) {
+      setCurrentUser(contact);
+      setIsInvite(false);
+    } else {
+      const invite = invites.find((invite) => invite.Username === username);
+
+      setCurrentUser(invite);
+      setIsInvite(true);
     }
-  });
-
-  const onSubmit: SubmitHandler<SearchFormValues> = async (values) => {
-    const users = await mutateAsync(values);
-    setUsers(users);
-  };
-
-  const handleNewInvite = (user: User) => {
-    setInvites([user, ...invites]);
-    navigate(`../${user.Username}`);
-  };
+  }, [username]);
 
   if (!username) return <div>No username provided</div>;
 
-  if (username === "new") {
-    return (
-      <div className="p-4">
-        <nav className="relative">
-          <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-            <div className="form-control w-full">
-              <div className="input-group">
-                <input
-                  type="text"
-                  placeholder="Search by username"
-                  className="input input-bordered w-full"
-                  {...register("username")}
-                />
-                <button className="btn btn-ghost btn-square" type="submit">
-                  <BiSearch className="text-2xl" />
-                </button>
-              </div>
-              <label className="label self-start">
-                <span className="label-text-alt">Press Enter to search</span>
-              </label>
-            </div>
-          </form>
+  const onSubmit: SubmitHandler<MessageFormValues> = async (values) => {
+    if (isInvite) {
+      await privateApi.post(`/api/v1/invites/${username}`, values);
+    }
+  };
 
-          {users.length > 0 && (
-            <ul className="menu absolute top-19 left-0 right-0 z-10 bg-base-300 rounded-box">
-              {users.map((user) => (
-                <li>
-                  <button onClick={() => handleNewInvite(user)}>
-                    <div className="flex items-baseline gap-2">
-                      <div className="text-lg text-primary-content">
-                        {user.Name}
-                      </div>
-                      <div>@{user.Username}</div>
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </nav>
-      </div>
-    );
-  }
+  return (
+    <div className="flex flex-col h-full">
+      {username === "new" ? <NewInviteForm /> : <TopBar user={currentUser} />}
 
-  return <div>right</div>;
+      <div className="flex-1"></div>
+
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="p-4 form-control">
+          <label className="input-group">
+            <input
+              type="text"
+              placeholder="Send message..."
+              className="input input-bordered w-full"
+              {...register("message")}
+            />
+            <button type="submit" className="btn btn-primary">
+              <BiSend className="text-2xl" />
+            </button>
+          </label>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default Right;

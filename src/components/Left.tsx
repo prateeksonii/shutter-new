@@ -3,6 +3,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
+import activeTabAtom from "../atoms/activeTabAtom";
 import invitesAtom from "../atoms/invitesAtom";
 import userAtom from "../atoms/userAtom";
 
@@ -12,9 +13,7 @@ const Left = () => {
 
   const [invites] = useAtom(invitesAtom);
 
-  const [activeTab, setActiveTab] = useState<"contacts" | "invites">(
-    "contacts"
-  );
+  const [activeTab, setActiveTab] = useAtom(activeTabAtom);
 
   if (!user) return <div>Loading...</div>;
 
